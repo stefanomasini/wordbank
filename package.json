@@ -1,0 +1,13 @@
+{
+    "name": "wordbank-server",
+    "description": "Wordbank",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "express": "3.2.5",
+        "then-redis": "0.3.8",
+        "when": "2.1.0",
+        "lodash": "1.2.1",
+        "reversable-router": "1.0.0"
+    }
+}

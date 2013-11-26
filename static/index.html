@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="bootstrap/dist/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="css/wordbank.css"/>
+    <script src="requirejs/require.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+</head>
+<body>
+<script>
+    require.config({
+        baseUrl: '/',
+        deps: ['cs!js/main'],
+        paths: {
+            // Aliases for libraries, so that we can change versions from here
+            libreact: 'react/react.min',
+            JSXTransformer: 'react/JSXTransformer',
+            jsx: 'lib/require-jsx',
+            jquery: 'jquery/jquery.min',
+            lodash: 'lodash/dist/lodash.min'
+//            when: 'bower_components/when/when'
+        },
+
+        shim: {
+            JSXTransformer: {
+                exports: "JSXTransformer"
+            }
+        },
+
+        // This is appended to every module loading request, for cache invalidation purposes
+        urlArgs: "bust=" + (new Date()).getTime(),
+
+        packages: [{
+            name: 'cs',
+            location: 'require-cs',
+            main: 'cs'
+        }, {
+            name: 'coffee-script',
+            location: 'coffee-script',
+            main: 'index'
+        }]
+    });
+</script>
+
+<div class="container">
+
+    <div class="row word-under-test"></div>
+    <div class="row word-translation" style="display: none;"></div>
+    <div class="row" id="word-buttons">
+        <div class="col-md-4" style="padding-top: 5px;">
+            <button type="button" class="btn btn-success btn-block" id="btn-iknow">I know!</button>
+        </div>
+        <div class="col-md-4" style="padding-top: 5px;">
+            <button type="button" class="btn btn-warning btn-block" id="btn-iknow-but-show">Yes, but show me</button>
+        </div>
+        <div class="col-md-4" style="padding-top: 5px;">
+            <button type="button" class="btn btn-danger btn-block" id="btn-idontknow">I don't know</button>
+        </div>
+    </div>
+
+    <div class="row new-word-box" style="margin-top: 20px;">
+        Input new word:
+
+        <form class="form-inline">
+            <div class="form-group">
+                <label class="sr-only" for="newword">Word</label>
+                <input type="text" class="form-control" id="newword" placeholder="Word">
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="newword-translation">Meaning</label>
+                <input type="text" class="form-control" id="newword-translation" placeholder="Meaning">
+            </div>
+            <button type="submit" class="btn btn-default" id="save-new-word">Save</button>
+        </form>
+    </div>
+
+    <div class="row" style="display: none;">
+        All words:
+        <ul class="all-words">
+        </ul>
+    </div>
+
+</div>
+
+
+</body>
+</html>

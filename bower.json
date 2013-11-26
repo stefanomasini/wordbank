@@ -1,0 +1,24 @@
+{
+  "name": "wordbank",
+  "version": "0.0.0",
+  "homepage": "https://github.com/stefanomasini/wordbank",
+  "authors": [
+    "Stefano Masini <stefano@stefanomasini.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "lodash": "~2.3.0",
+    "bootstrap": "~3.0.2",
+    "require-cs": "~0.4.4",
+    "react": "~0.5.1",
+    "requirejs": "~2.1.9"
+  }
+}
