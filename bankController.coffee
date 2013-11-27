@@ -9,6 +9,5 @@ exports.configureApp = (app, appConf) ->
     app.get '/words', 'words', (req, res) ->
         appConf.db.getWords()
             .then (words) ->
-                    console.log words
                     res.json
                         words: words
