@@ -45,3 +45,7 @@ body {
     font-weight: bold;
     color: #793100;
 }
+
+.word-button {
+    padding-top: 15px;
+}
