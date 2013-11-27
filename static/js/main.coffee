@@ -91,11 +91,6 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
                 currentWord.attemptMemorization(true, currentFromSource)
                 fetchNextWord()
 
-        $('#btn-iknow-but-show').on 'click', (e) ->
-            if currentWord
-                currentWord.attemptMemorization(true, currentFromSource)
-                showTranslation()
-
         $('#btn-idontknow').on 'click', (e) ->
             if currentWord
                 currentWord.attemptMemorization(false, currentFromSource)
