@@ -1,36 +1,46 @@
 define ['lodash'], (_) ->
     class Bank
-        constructor: () ->
+        constructor: (listener) ->
             @words = {}
+            @listener = listener
+
+        initialize: (words) ->
+            for word in words
+                @words[word.src] = word
 
         getSize: () -> _.size(@words)
 
         addNewWord: (word) ->
             @words[word] =
                 src: word
+                epochUTCms: new Date().getTime()
                 memorizationAttempts: []
+            @listener?(@words[word])
 
         getAllNewWords: () ->
-            (new Word(word) for word in _.values(@words) when not word.translation)
+            (new Word(word, @listener) for word in _.values(@words) when not word.translation)
 
         getAllTranslatedWords: () ->
-            (new Word(word) for word in _.values(@words) when word.translation)
+            (new Word(word, @listener) for word in _.values(@words) when word.translation)
 
         setTranslation: (word, translation) ->
             if not @words[word]
                 @addNewWord(word)
             @words[word].translation = translation
+            @words[word].epochUTCms = new Date().getTime()
+            @listener?(@words[word])
 
         getTranslationFor: (word) -> @words[word]?.translation
 
         getWord: (word) ->
             if @words[word]
-                new Word(@words[word])
+                new Word(@words[word], @listener)
 
 
     class Word
-        constructor: (word) ->
+        constructor: (word, listener) ->
             @word = word
+            @listener = listener
 
         getWord: () -> @word.src
 
@@ -39,6 +49,7 @@ define ['lodash'], (_) ->
         setTranslation: (translation) ->
             @word.translation = translation
             @word.epochUTCms = new Date().getTime()
+            @listener?(@word)
 
         getMemorizationAttempts: (fromSource) -> (attempt for attempt in @word.memorizationAttempts when attempt.fromSource == fromSource)
 
@@ -47,6 +58,7 @@ define ['lodash'], (_) ->
                 success: success
                 fromSource: fromSource
                 epochUTCms: new Date().getTime()
+            @listener?(@word)
 
         getNumSuccessfulMemorizationAttempts: (fromSource) ->
             counter = 0
@@ -69,6 +81,8 @@ define ['lodash'], (_) ->
         fetchNext: () ->
             randomNumber = Math.random()
             allWords = @bank.getAllTranslatedWords()
+            if allWords.length == 0
+                return [null, null]
             words = (word for word in allWords when word.getWord() not in @lastChosenWords)
             chosenWord = null
             for [chosenWord, fromSource, probability] in @getWordProbabilities(words)
@@ -105,8 +119,28 @@ define ['lodash'], (_) ->
             return probabilities
 
 
+    class Saver
+        constructor: () ->
+            @spool = {}
+
+        notify: (change) ->
+            if !@spool[change.src] || change.epochUTCms > @spool[change.src].epochUTCms
+                @spool[change.src] = change
+
+        startSaving: () ->
+            changes = _.values(@spool)
+            @spool = {}
+            return {
+                changes: changes
+                revert: () =>
+                    for change in changes
+                        @notify(change)
+            }
+
+
     return {
         Bank: Bank
         Learning: Learning
+        Saver: Saver
     }
 

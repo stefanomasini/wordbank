@@ -3,20 +3,25 @@ define ['js/bank'], (bankMod) ->
 
     describe 'bank', () ->
         bank = null
+        changes = []
 
         beforeEach () ->
-            bank = new bankMod.Bank()
+            changes = []
+            bank = new bankMod.Bank (c) -> changes.push(c)
 
         it 'can add new word', () ->
             expect(bank.getSize()).toEqual(0)
             bank.addNewWord('foo')
             expect(bank.getSize()).toEqual(1)
+            expect(changes.length).toEqual(1)
+            expect(changes[0].src).toEqual('foo')
 
         it 'can list all new words', () ->
             bank.addNewWord('foo')
             bank.addNewWord('bar')
             bank.addNewWord('bar')
             expect(bank.getAllNewWords().length).toEqual(2)
+            expect(changes.length).toEqual(3)
 
         it 'can accept a word translation and remembers it', () ->
             bank.addNewWord('foo')
@@ -25,6 +30,7 @@ define ['js/bank'], (bankMod) ->
             expect(bank.getTranslationFor('foo')).toEqual('fooTranslated')
             expect(bank.getTranslationFor('bar')).toEqual('barTranslated')
             expect(bank.getTranslationFor('other')).toBeUndefined()
+            expect(changes.length).toEqual(4)
 
         it 'can list all translated words', () ->
             bank.addNewWord('foo')
@@ -43,21 +49,25 @@ define ['js/bank'], (bankMod) ->
     describe 'word', () ->
         bank = null
         word = null
+        changes = []
 
         beforeEach () ->
-            bank = new bankMod.Bank()
+            bank = new bankMod.Bank (c) -> changes.push(c)
             bank.setTranslation('foo', 'fooTranslated')
             word = bank.getWord('foo')
+            changes = []
 
         it 'feeds back into bank', () ->
             word.setTranslation('anotherTranslaction')
             expect(bank.getTranslationFor('foo')).toEqual('anotherTranslaction')
+            expect(changes.length).toEqual(1)
 
         it 'stores memorization attempts', () ->
             expect(word.getMemorizationAttempts(true).length).toEqual(0)
             word.attemptMemorization(true, true)
             expect(word.getMemorizationAttempts(true).length).toEqual(1)
             expect(word.getMemorizationAttempts(true)[0].success).toEqual(true)
+            expect(changes.length).toEqual(1)
 
         it 'evaluates the memorization level', () ->
             expect(word.getNumSuccessfulMemorizationAttempts(true)).toEqual(0)
@@ -148,3 +158,36 @@ define ['js/bank'], (bankMod) ->
             bank.getWord('1').attemptMemorization(true, false)
             probabilities = calculateProbabilitiesMap()
             expect(Math.abs(probabilities['1-fromSource'])).toBeLessThan(probabilities['1-fromTranslation'] - 0.001)
+
+    describe 'saver', () ->
+        change = (src, ts) ->
+            src: src
+            epochUTCms: ts
+
+        saver = null
+
+        beforeEach () ->
+            saver = new bankMod.Saver()
+
+        it 'collects changes by increasing timestamp', () ->
+            saver.notify change('foo', 2)
+            expect(_.size(saver.spool)).toEqual(1)
+            saver.notify change('foo', 3)
+            expect(_.size(saver.spool)).toEqual(1)
+            saver.notify change('foo', 1)
+            expect(saver.spool['foo'].epochUTCms).toEqual(3)
+
+        it 'spawns a different spool when saving is in progress that can be merged back in case of error', () ->
+            saver.notify change('foo', 1)
+            saver.notify change('bar', 2)
+            saving = saver.startSaving()
+            expect(_.size(saver.spool)).toEqual(0)
+            expect(saving.changes.length).toEqual(2)
+
+            saver.notify change('bar', 3)
+            expect(_.size(saver.spool)).toEqual(1)
+
+            saving.revert()
+            expect(_.size(saver.spool)).toEqual(2)
+            expect(saver.spool['bar'].epochUTCms).toEqual(3)
+            expect(saver.spool['foo'].epochUTCms).toEqual(1)

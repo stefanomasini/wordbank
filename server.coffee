@@ -3,7 +3,7 @@ http = require 'http'
 path = require 'path'
 redis = require 'then-redis'
 _ = require 'lodash'
-#database = require './database'
+database = require './database'
 
 # ---------------------------------------------------------------
 
@@ -21,8 +21,7 @@ port = process.env.PORT || 3000
 
 appConf =
     router: router
-
-
+    db: new database.buildDatabase(redis.createClient())
 
 
 # ---------------------------------------------------------------
@@ -35,7 +34,7 @@ app.use express.cookieSession
 
 #authentication = require('./authentication')
 #authentication.configureApp(app, appConf)
-#require('./controllers/uploadSessions').configureApp(app, appConf)
+require('./bankController').configureApp(app, appConf)
 
 # Static files
 app.use(express.static('static'))
