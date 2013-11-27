@@ -25,22 +25,23 @@ body {
 .word-under-test {
     padding: 9px 14px;
     margin-bottom: 14px;
-    background-color: #f7f7f9;
+    background-color: #E3F5FF;
     border: 1px solid #e1e1e8;
     border-radius: 4px;
     text-align: center;
     font-size: 3em;
     font-weight: bold;
+    color: #0040A7;
 }
 
 .word-translation {
     padding: 9px 14px;
     margin-bottom: 14px;
-    background-color: white;
+    background-color: #FFF2DD;
     border: 1px solid #e1e1e8;
     border-radius: 4px;
     text-align: center;
     font-size: 3em;
     font-weight: bold;
-    color: blue;
+    color: #793100;
 }

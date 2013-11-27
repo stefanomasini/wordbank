@@ -21,8 +21,7 @@ define ['lodash'], (_) ->
                 @addNewWord(word)
             @words[word].translation = translation
 
-        getTranslationFor: (word) ->
-            @words[word]?.translation
+        getTranslationFor: (word) -> @words[word]?.translation
 
         getWord: (word) ->
             if @words[word]
@@ -33,36 +32,33 @@ define ['lodash'], (_) ->
         constructor: (word) ->
             @word = word
 
-        getWord: () ->
-            return @word.src
+        getWord: () -> @word.src
 
-        getTranslation: () ->
-            return @word.translation
+        getTranslation: () -> @word.translation
 
         setTranslation: (translation) ->
             @word.translation = translation
             @word.epochUTCms = new Date().getTime()
 
-        getMemorizationAttempts: () ->
-            return @word.memorizationAttempts
+        getMemorizationAttempts: (fromSource) -> (attempt for attempt in @word.memorizationAttempts when attempt.fromSource == fromSource)
 
-        attemptMemorization: (success) ->
+        attemptMemorization: (success, fromSource) ->
             @word.memorizationAttempts.push
                 success: success
+                fromSource: fromSource
                 epochUTCms: new Date().getTime()
 
-        getNumSuccessfulMemorizationAttempts: () ->
+        getNumSuccessfulMemorizationAttempts: (fromSource) ->
             counter = 0
             if @word.memorizationAttempts.length > 0
                 for idx in [@word.memorizationAttempts.length-1 .. 0]
-                    if @word.memorizationAttempts[idx].success == true
+                    if @word.memorizationAttempts[idx].success == true && @word.memorizationAttempts[idx].fromSource == fromSource
                         counter += 1
                     else
                         break
             return counter
 
-        isKnown: () ->
-            return @getNumSuccessfulMemorizationAttempts() > 0
+        isKnown: (fromSource) -> @getNumSuccessfulMemorizationAttempts(fromSource) > 0
 
 
     class Learning
@@ -75,15 +71,14 @@ define ['lodash'], (_) ->
             allWords = @bank.getAllTranslatedWords()
             words = (word for word in allWords when word.getWord() not in @lastChosenWords)
             chosenWord = null
-            for [word, probability] in _.pairs(@getWordProbabilities(words))
+            for [chosenWord, fromSource, probability] in @getWordProbabilities(words)
                 randomNumber -= probability
                 if randomNumber < 0
                     break
-            chosenWord = @bank.getWord(word)
             @lastChosenWords.push chosenWord.getWord()
             while @lastChosenWords.length > Math.min(3, allWords.length-1)
                 @lastChosenWords.splice(0, 1)
-            return chosenWord
+            return [chosenWord, fromSource]
 
         getWordProbabilities: (words) ->
             knownWords = []
@@ -91,21 +86,22 @@ define ['lodash'], (_) ->
             unknownWords = []
             totalForUnknownWords = 0
             for word in words
-                numSuccessfulAttempts = word.getNumSuccessfulMemorizationAttempts()
-                if numSuccessfulAttempts > 0
-                    weight = 4 - Math.min(3, numSuccessfulAttempts)
-                    totalForKnownWords += weight
-                    knownWords.push [word, weight]
-                else
-                    weight = 1 / (word.getMemorizationAttempts().length+1)
-                    totalForUnknownWords += weight
-                    unknownWords.push [word, weight]
-            probabilities = {}
+                for fromSource in [true, false]
+                    numSuccessfulAttempts = word.getNumSuccessfulMemorizationAttempts(fromSource)
+                    if numSuccessfulAttempts > 0
+                        weight = 4 - Math.min(3, numSuccessfulAttempts)
+                        totalForKnownWords += weight
+                        knownWords.push [word, fromSource, weight]
+                    else
+                        weight = 1 / (word.getMemorizationAttempts(fromSource).length+1)
+                        totalForUnknownWords += weight
+                        unknownWords.push [word, fromSource, weight]
+            probabilities = []
             sectionTotal = if knownWords.length > 0 and unknownWords.length > 0 then 0.5 else 1
-            for [word, weight] in knownWords
-                probabilities[word.getWord()] = weight * sectionTotal / totalForKnownWords
-            for [word, weight] in unknownWords
-                probabilities[word.getWord()] = weight * sectionTotal / totalForUnknownWords
+            for [word, fromSource, weight] in knownWords
+                probabilities.push [word, fromSource, weight * sectionTotal / totalForKnownWords]
+            for [word, fromSource, weight] in unknownWords
+                probabilities.push [word, fromSource, weight * sectionTotal / totalForUnknownWords]
             return probabilities
 
 
