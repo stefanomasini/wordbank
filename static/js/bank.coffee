@@ -64,10 +64,11 @@ define ['lodash'], (_) ->
             counter = 0
             if @word.memorizationAttempts.length > 0
                 for idx in [@word.memorizationAttempts.length-1 .. 0]
-                    if @word.memorizationAttempts[idx].success == true && @word.memorizationAttempts[idx].fromSource == fromSource
-                        counter += 1
-                    else
-                        break
+                    if @word.memorizationAttempts[idx].fromSource == fromSource
+                        if @word.memorizationAttempts[idx].success == true
+                            counter += 1
+                        else
+                            break
             return counter
 
         isKnown: (fromSource) -> @getNumSuccessfulMemorizationAttempts(fromSource) > 0

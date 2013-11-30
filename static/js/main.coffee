@@ -42,6 +42,22 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
 
         updateCounters = () ->
             $('.num-words').text(bank.getAllTranslatedWords().length)
+            $('.num-unknown-words').text(bank.getAllNewWords().length)
+            allWords = learning.getWordProbabilities(bank.getAllTranslatedWords())
+            allWords = _.sortBy(allWords, ([word, fromSource, prob]) -> word.getWord())
+            $('.all-words').empty()
+            for [word, fromSource, prob], wordIdx in allWords
+                if fromSource
+                    $('.all-words').append("""
+                        <tr style="background-color: #{if word.isKnown(true) && word.isKnown(false) then '#D9FFD5' else '#FFEFE1'};">
+                            <td>#{wordIdx}</td>
+                            <td>#{word.getWord()}</td>
+                            <td>#{word.getTranslation()}</td>
+                            <td>#{Math.floor(prob*100)}%</td>
+                            <td>#{word.getMemorizationAttempts(true).length} + #{word.getMemorizationAttempts(false).length}</td>
+                            <td>#{word.getNumSuccessfulMemorizationAttempts(true)} + #{word.getNumSuccessfulMemorizationAttempts(false)}</td>
+                        </tr>
+                    """)
 
         $('#save-new-word').on 'click', (e) ->
             e.preventDefault()
@@ -61,11 +77,6 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
                     $('.word-under-test').text('?')
                     $('.word-translation').text(currentWord.getTranslation())
 
-            allWords = learning.getWordProbabilities(bank.getAllTranslatedWords())
-            allWords = _.sortBy(_.pairs(allWords), ([word, prob]) -> prob)
-            $('.all-words').empty()
-            for [word, prob] in allWords
-                $('.all-words').append("<li>#{Math.floor(prob*100)}% - #{word}</li>")
             $('#word-buttons').show()
 
         showTranslation = () ->
@@ -79,12 +90,14 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
             translationShown = false
 
         $('.word-translation').on 'click', () ->
-            hideTranslation()
-            fetchNextWord()
+            if translationShown
+                hideTranslation()
+                fetchNextWord()
 
         $('.word-under-test').on 'click', () ->
-            hideTranslation()
-            fetchNextWord()
+            if translationShown
+                hideTranslation()
+                fetchNextWord()
 
         $('#btn-iknow').on 'click', (e) ->
             if currentWord
@@ -95,6 +108,12 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
             if currentWord
                 currentWord.attemptMemorization(false, currentFromSource)
                 showTranslation()
+
+        $('#vocabulary').on 'click', () ->
+            $('#vocabulary-section').show()
+            $('#exercise-section').hide()
+            updateCounters()
+
 
         # -- Load words ----
 #        bank.setTranslation('begrijpen', 'capire')

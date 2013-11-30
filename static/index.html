@@ -47,41 +47,64 @@
 
 <div class="container">
 
-    <div class="row word-under-test">?</div>
-    <div class="row word-translation">?</div>
-    <div class="row" id="word-buttons">
-        <div class="col-md-6 word-button">
-            <button type="button" class="btn btn-success btn-lg btn-block" id="btn-iknow">I know</button>
-        </div>
-        <div class="col-md-6 word-button">
-            <button type="button" class="btn btn-danger btn-lg btn-block" id="btn-idontknow">Show me</button>
-        </div>
-    </div>
-
-    <div class="row new-word-box" style="margin-top: 20px;">
-        Input new word:
-
-        <form class="form-inline">
-            <div class="form-group">
-                <label class="sr-only" for="newword">Word</label>
-                <input type="text" class="form-control" id="newword" placeholder="Word">
+    <div id="exercise-section">
+        <div class="row word-under-test">?</div>
+        <div class="row word-translation">?</div>
+        <div class="row" id="word-buttons">
+            <div class="col-md-6 word-button">
+                <button type="button" class="btn btn-success btn-lg btn-block" id="btn-iknow">I know</button>
             </div>
-            <div class="form-group">
-                <label class="sr-only" for="newword-translation">Meaning</label>
-                <input type="text" class="form-control" id="newword-translation" placeholder="Meaning">
+            <div class="col-md-6 word-button">
+                <button type="button" class="btn btn-danger btn-lg btn-block" id="btn-idontknow">Show me</button>
             </div>
-            <button type="submit" class="btn btn-default" id="save-new-word">Save</button>
-        </form>
+        </div>
+
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-10">
+                DB: <span class="num-words"></span> words
+            </div>
+            <div class="col-md-2" style="text-align: right;">
+                <button type="button" id="vocabulary" class="btn btn-default">Vocabulary</button>
+            </div>
+        </div>
     </div>
 
-    <div class="row new-word-box">
-        <p>Number or words in DB: <span class="num-words"></span></p>
-    </div>
+    <div id="vocabulary-section" style="display: none;">
+        <div class="row new-word-box">
+            <p>Vocabulary: <span class="num-words"></span> words + <span class="num-unknown-words"></span> to traslate</p>
+        </div>
 
-    <div class="row" style="display: none;">
-        All words:
-        <ul class="all-words">
-        </ul>
+        <div class="row new-word-box" style="margin-top: 20px;">
+            Input new word:
+
+            <form class="form-inline">
+                <div class="form-group">
+                    <label class="sr-only" for="newword">Word</label>
+                    <input type="text" class="form-control" id="newword" placeholder="Word">
+                </div>
+                <div class="form-group">
+                    <label class="sr-only" for="newword-translation">Meaning</label>
+                    <input type="text" class="form-control" id="newword-translation" placeholder="Meaning">
+                </div>
+                <button type="submit" class="btn btn-default" id="save-new-word">Save</button>
+            </form>
+        </div>
+
+        <div class="row">
+            All words:
+            <table class="table">
+                <thead>
+                    <th></th>
+                    <th>Word</th>
+                    <th>Translation</th>
+                    <th>Probability</th>
+                    <th># attempts</th>
+                    <th># success</th>
+                </thead>
+                <tbody class="all-words">
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>
