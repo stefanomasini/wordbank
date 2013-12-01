@@ -52,11 +52,16 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
             allWords = learning.getWordProbabilities(bank.getAllTranslatedWords())
             allWords = _.sortBy(allWords, (wp) -> wp.word.getWord())
             $('.all-words').empty()
-            for wp, wordIdx in allWords
+            numWords = 0
+            numKnownWords = 0
+            for wp in allWords
                 if wp.fromSource
+                    numWords += 1
+                    if wp.word.isKnownBothWays()
+                        numKnownWords += 1
                     $('.all-words').append("""
-                        <tr style="background-color: #{if wp.word.isKnown(true) && wp.word.isKnown(false) then '#D9FFD5' else '#FFEFE1'};" data-word="#{wp.word.getWord()}">
-                            <td>#{wordIdx}</td>
+                        <tr style="background-color: #{if wp.word.isKnownBothWays() then '#D9FFD5' else '#FFEFE1'};" data-word="#{wp.word.getWord()}">
+                            <td>#{numWords}</td>
                             <td class="source-word">#{wp.word.getWord()}</td>
                             <td>#{wp.word.getTranslation()}</td>
                             <td>#{Math.floor(wp.weight*100)}</td>
@@ -64,6 +69,9 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
                             <td>#{wp.word.getNumSuccessfulMemorizationAttempts(true)} + #{wp.word.getNumSuccessfulMemorizationAttempts(false)}</td>
                         </tr>
                     """)
+            percKnown = Math.floor(100*numKnownWords/numWords)
+            $('.bar-words-known').css('width', "#{percKnown}%")
+            $('.bar-words-unknown').css('width', "#{100-percKnown}%")
 
             allNewWords = bank.getAllNewWords()
             allNewWords = _.sortBy(allNewWords, (w) -> w.getWord())
@@ -118,12 +126,12 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
                     $('.word-under-test').text('?')
                     $('.word-translation').text(currentWord.getTranslation())
 
-            $('#word-buttons').show()
+            $('#word-buttons').children().show()
 
         showTranslation = () ->
             $('.word-under-test').text(currentWord.getWord()).show()
             $('.word-translation').text(currentWord.getTranslation()).show()
-            $('#word-buttons').hide()
+            $('#word-buttons').children().hide()
             translationShown = true
 
         hideTranslation = () ->
@@ -143,11 +151,13 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
         $('#btn-iknow').on 'click', (e) ->
             if currentWord
                 currentWord.attemptMemorization(true, currentFromSource)
+                updateCounters()
                 fetchNextWord()
 
         $('#btn-idontknow').on 'click', (e) ->
             if currentWord
                 currentWord.attemptMemorization(false, currentFromSource)
+                updateCounters()
                 showTranslation()
 
         $('#vocabulary').on 'click', () ->

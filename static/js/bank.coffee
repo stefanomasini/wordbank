@@ -84,6 +84,8 @@ define ['lodash'], (_) ->
 
         isKnown: (fromSource) -> @getNumSuccessfulMemorizationAttempts(fromSource) > 0
 
+        isKnownBothWays: () -> @isKnown(true) && @isKnown(false)
+
 
     class Learning
         constructor: (bank) ->
