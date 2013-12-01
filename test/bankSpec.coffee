@@ -120,7 +120,7 @@ define ['js/bank'], (bankMod) ->
             totalProbability = _.reduce allProbabilities, (a,b) -> a+b
             expect(Math.abs(totalProbability - 1)).toBeLessThan(0.00001)
 
-        it 'splits probability equally between known and unknown words', () ->
+        it 'splits probability between known and unknown words', () ->
             for word in allWords[..3]
                 word.attemptMemorization(true, true)
             totalProbabilityForKnown = 0
@@ -130,8 +130,8 @@ define ['js/bank'], (bankMod) ->
                     totalProbabilityForKnown += wp.prob
                 else
                     totalProbabilityForUnknown += wp.prob
-            expect(Math.abs(totalProbabilityForKnown - 0.5)).toBeLessThan(0.00001)
-            expect(Math.abs(totalProbabilityForUnknown - 0.5)).toBeLessThan(0.00001)
+            expect(Math.abs(totalProbabilityForKnown - 0.25)).toBeLessThan(0.00001)
+            expect(Math.abs(totalProbabilityForUnknown - 0.75)).toBeLessThan(0.00001)
 
         it 'makes lesser known words more likely to be chosen', () ->
             bank.getWord('1').attemptMemorization(true, true)

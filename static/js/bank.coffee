@@ -128,11 +128,15 @@ define ['lodash'], (_) ->
                         totalForUnknownWords += weight
                         unknownWords.push [word, fromSource, weight]
             probabilities = []
-            sectionTotal = if knownWords.length > 0 and unknownWords.length > 0 then 0.5 else 1
+            if knownWords.length > 0 and unknownWords.length > 0
+                knownSectionTotal = 0.25
+                unknownSectionTotal = 0.75
+            else
+                knownSectionTotal = unknownSectionTotal = 1
             for [word, fromSource, weight] in knownWords
-                probabilities.push {word:word, fromSource:fromSource, weight:weight * sectionTotal, prob:weight * sectionTotal / totalForKnownWords}
+                probabilities.push {word:word, fromSource:fromSource, weight:weight * knownSectionTotal, prob:weight * knownSectionTotal / totalForKnownWords}
             for [word, fromSource, weight] in unknownWords
-                probabilities.push {word:word, fromSource:fromSource, weight:weight * sectionTotal, prob:weight * sectionTotal / totalForUnknownWords}
+                probabilities.push {word:word, fromSource:fromSource, weight:weight * unknownSectionTotal, prob:weight * unknownSectionTotal / totalForUnknownWords}
             return probabilities
 
 
