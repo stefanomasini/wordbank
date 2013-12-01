@@ -43,21 +43,37 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
         updateCounters = () ->
             $('.num-words').text(bank.getAllTranslatedWords().length)
             $('.num-unknown-words').text(bank.getAllNewWords().length)
+
             allWords = learning.getWordProbabilities(bank.getAllTranslatedWords())
-            allWords = _.sortBy(allWords, ([word, fromSource, prob]) -> word.getWord())
+            allWords = _.sortBy(allWords, (wp) -> wp.word.getWord())
             $('.all-words').empty()
-            for [word, fromSource, prob], wordIdx in allWords
-                if fromSource
+            for wp, wordIdx in allWords
+                if wp.fromSource
                     $('.all-words').append("""
-                        <tr style="background-color: #{if word.isKnown(true) && word.isKnown(false) then '#D9FFD5' else '#FFEFE1'};">
+                        <tr style="background-color: #{if wp.word.isKnown(true) && wp.word.isKnown(false) then '#D9FFD5' else '#FFEFE1'};">
                             <td>#{wordIdx}</td>
-                            <td>#{word.getWord()}</td>
-                            <td>#{word.getTranslation()}</td>
-                            <td>#{Math.floor(prob*100)}%</td>
-                            <td>#{word.getMemorizationAttempts(true).length} + #{word.getMemorizationAttempts(false).length}</td>
-                            <td>#{word.getNumSuccessfulMemorizationAttempts(true)} + #{word.getNumSuccessfulMemorizationAttempts(false)}</td>
+                            <td>#{wp.word.getWord()}</td>
+                            <td>#{wp.word.getTranslation()}</td>
+                            <td>#{Math.floor(wp.weight*100)}</td>
+                            <td>#{wp.word.getMemorizationAttempts(true).length} + #{wp.word.getMemorizationAttempts(false).length}</td>
+                            <td>#{wp.word.getNumSuccessfulMemorizationAttempts(true)} + #{wp.word.getNumSuccessfulMemorizationAttempts(false)}</td>
                         </tr>
                     """)
+
+            allNewWords = bank.getAllNewWords()
+            allNewWords = _.sortBy(allNewWords, (w) -> w.getWord())
+            $('.all-new-words').empty()
+            for word, wordIdx in allNewWords
+                $('.all-new-words').append("""
+                    <tr data-word="#{word.getWord()}">
+                        <td>#{wordIdx}</td>
+                        <td>#{word.getWord()}</td>
+                        <td><input type="text" class="form-control new-word-translation" placeholder="Translation"></td>
+                    </tr>
+                """)
+            $('.new-word-translation').change () ->
+                bank.setTranslation($(this).parents('tr').data('word'), $(this).val())
+                updateCounters()
 
         $('#save-new-word').on 'click', (e) ->
             e.preventDefault()

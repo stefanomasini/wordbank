@@ -86,8 +86,11 @@ define ['lodash'], (_) ->
                 return [null, null]
             words = (word for word in allWords when word.getWord() not in @lastChosenWords)
             chosenWord = null
-            for [chosenWord, fromSource, probability] in @getWordProbabilities(words)
-                randomNumber -= probability
+            fromSource = null
+            for wp in @getWordProbabilities(words)
+                chosenWord = wp.word
+                fromSource = wp.fromSource
+                randomNumber -= wp.prob
                 if randomNumber < 0
                     break
             @lastChosenWords.push chosenWord.getWord()
@@ -114,9 +117,9 @@ define ['lodash'], (_) ->
             probabilities = []
             sectionTotal = if knownWords.length > 0 and unknownWords.length > 0 then 0.5 else 1
             for [word, fromSource, weight] in knownWords
-                probabilities.push [word, fromSource, weight * sectionTotal / totalForKnownWords]
+                probabilities.push {word:word, fromSource:fromSource, weight:weight * sectionTotal, prob:weight * sectionTotal / totalForKnownWords}
             for [word, fromSource, weight] in unknownWords
-                probabilities.push [word, fromSource, weight * sectionTotal / totalForUnknownWords]
+                probabilities.push {word:word, fromSource:fromSource, weight:weight * sectionTotal, prob:weight * sectionTotal / totalForUnknownWords}
             return probabilities
 
 

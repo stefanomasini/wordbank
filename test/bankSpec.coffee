@@ -106,7 +106,7 @@ define ['js/bank'], (bankMod) ->
         makeKey = ([word, fromSource]) -> "#{word.getWord()}-#{if fromSource then 'fromSource' else 'fromTranslation'}"
         calculateProbabilitiesMap = () ->
             probabilities = learning.getWordProbabilities(bank.getAllTranslatedWords())
-            return _.zipObject([makeKey([word, fromSource]), probability] for [word, fromSource, probability] in probabilities)
+            return _.zipObject([makeKey([wp.word, wp.fromSource]), wp.prob] for wp in probabilities)
 
         it 'fetches a different word at every attempt', () ->
             lastWord = makeKey(learning.fetchNext())
@@ -116,7 +116,7 @@ define ['js/bank'], (bankMod) ->
                 lastWord = nextWord
 
         it 'computes probability for each word to be chosen as next', () ->
-            allProbabilities = (probability for [chosenWord, fromSource, probability] in learning.getWordProbabilities(bank.getAllTranslatedWords()))
+            allProbabilities = (wp.prob for wp in learning.getWordProbabilities(bank.getAllTranslatedWords()))
             totalProbability = _.reduce allProbabilities, (a,b) -> a+b
             expect(Math.abs(totalProbability - 1)).toBeLessThan(0.00001)
 
@@ -125,11 +125,11 @@ define ['js/bank'], (bankMod) ->
                 word.attemptMemorization(true, true)
             totalProbabilityForKnown = 0
             totalProbabilityForUnknown = 0
-            for [word, fromSource, probability] in learning.getWordProbabilities(bank.getAllTranslatedWords())
-                if word.isKnown(fromSource)
-                    totalProbabilityForKnown += probability
+            for wp in learning.getWordProbabilities(bank.getAllTranslatedWords())
+                if wp.word.isKnown(wp.fromSource)
+                    totalProbabilityForKnown += wp.prob
                 else
-                    totalProbabilityForUnknown += probability
+                    totalProbabilityForUnknown += wp.prob
             expect(Math.abs(totalProbabilityForKnown - 0.5)).toBeLessThan(0.00001)
             expect(Math.abs(totalProbabilityForUnknown - 0.5)).toBeLessThan(0.00001)
 
