@@ -92,6 +92,9 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
                 cellTag = $(this)
                 oldText = cellTag.text()
                 cellTag.empty().append """<input type="text" class="form-control" value="#{oldText}">"""
+                cellTag.find('input').click (e) ->
+                    e.preventDefault()
+                    return false
                 cellTag.find('input').focus().select().change () ->
                     callback(srcWord, $(this).val())
                 restore = () -> cellTag.empty().text(oldText)
@@ -99,6 +102,8 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
                 cellTag.find('input').keyup (e) ->
                     if e.keyCode == 27
                         restore()
+                    if e.keyCode == 13
+                        $(this).focusout()
 
         editOnClick '.source-word', (srcWord, newSource) ->
             if newSource == ''
