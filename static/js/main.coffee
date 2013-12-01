@@ -72,6 +72,7 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
             percKnown = Math.floor(100*numKnownWords/numWords)
             $('.bar-words-known').css('width', "#{percKnown}%")
             $('.bar-words-unknown').css('width', "#{100-percKnown}%")
+            $('.perc-known').text("#{percKnown}%")
 
             allNewWords = bank.getAllNewWords()
             allNewWords = _.sortBy(allNewWords, (w) -> w.getWord())
