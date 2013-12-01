@@ -63,7 +63,7 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
                         <tr style="background-color: #{if wp.word.isKnownBothWays() then '#D9FFD5' else '#FFEFE1'};" data-word="#{wp.word.getWord()}">
                             <td>#{numWords}</td>
                             <td class="source-word">#{wp.word.getWord()}</td>
-                            <td>#{wp.word.getTranslation()}</td>
+                            <td class="table-word-translation">#{wp.word.getTranslation()}</td>
                             <td>#{Math.floor(wp.weight*100)}</td>
                             <td>#{wp.word.getMemorizationAttempts(true).length} + #{wp.word.getMemorizationAttempts(false).length}</td>
                             <td>#{wp.word.getNumSuccessfulMemorizationAttempts(true)} + #{wp.word.getNumSuccessfulMemorizationAttempts(false)}</td>
@@ -86,22 +86,31 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
                     </tr>
                 """)
 
-        $('.container').on 'click', '.source-word', () ->
-            srcWord = $(this).parents('tr').data('word')
-            cellTag = $(this)
-            cellTag.empty().append """<input type="text" class="form-control new-word-source" value="#{srcWord}">"""
-            cellTag.find('input').focus().select().change () ->
-                newSource = $(this).val()
-                if newSource == ''
-                    bank.removeWord(srcWord)
-                else
-                    bank.renameWord(srcWord, newSource)
+        editOnClick = (selector, callback) ->
+            $('.container').on 'click', selector, () ->
+                srcWord = $(this).parents('tr').data('word')
+                cellTag = $(this)
+                oldText = cellTag.text()
+                cellTag.empty().append """<input type="text" class="form-control" value="#{oldText}">"""
+                cellTag.find('input').focus().select().change () ->
+                    callback(srcWord, $(this).val())
+                restore = () -> cellTag.empty().text(oldText)
+                cellTag.find('input').focusout () -> restore()
+                cellTag.find('input').keyup (e) ->
+                    if e.keyCode == 27
+                        restore()
+
+        editOnClick '.source-word', (srcWord, newSource) ->
+            if newSource == ''
+                bank.removeWord(srcWord)
+            else
+                bank.renameWord(srcWord, newSource)
+            updateCounters()
+
+        editOnClick '.table-word-translation', (srcWord, newTranslation) ->
+            if newTranslation != ''
+                bank.setTranslation(srcWord, newTranslation)
                 updateCounters()
-            restore = () -> cellTag.empty().text "#{srcWord}"
-            cellTag.find('input').focusout () -> restore()
-            cellTag.find('input').keyup (e) ->
-                if e.keyCode == 27
-                    restore()
 
         $('.container').on 'change', '.new-word-translation', () ->
             bank.setTranslation($(this).parents('tr').data('word'), $(this).val())
