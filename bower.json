@@ -15,10 +15,10 @@
     "tests"
   ],
   "dependencies": {
-    "lodash": "~2.3.0",
-    "bootstrap": "~3.0.2",
-    "require-cs": "~0.4.4",
-    "react": "~0.5.1",
-    "requirejs": "~2.1.9"
+    "lodash": "2.3.0",
+    "bootstrap": "3.0.2",
+    "require-cs": "0.4.4",
+    "react": "0.5.1",
+    "requirejs": "2.1.9"
   }
 }

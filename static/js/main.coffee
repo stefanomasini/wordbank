@@ -14,23 +14,28 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
 
         saveViaAjax = () ->
             saving = saver.startSaving()
-            if saving.changes.length == 0
+            if saving.changes.length == 0 and saving.deletes.length == 0
                 scheduleNextAjaxSave()
                 return
-            console.log('Attempting Ajax save...')
+            $('.saving-status').hide()
+            $('.saving-status-up').show()
             $.ajax
                 type: 'POST'
                 url: 'changes'
                 data:
                     data: JSON.stringify
                         changes: saving.changes
+                        deletes: saving.deletes
             .done () ->
-                console.log('Saving done')
+                $('.saving-status').hide()
+                $('.saving-status-ok').show().fadeOut()
                 scheduleNextAjaxSave()
             .fail () ->
-                console.log('Ajax failed')
+                $('.saving-status').hide()
+                $('.saving-status-warning').show()
                 saving.revert()
                 scheduleNextAjaxSave()
+
 
         scheduleNextAjaxSave = () ->
             setTimeout saveViaAjax, saveTimeoutInMs
@@ -50,9 +55,9 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
             for wp, wordIdx in allWords
                 if wp.fromSource
                     $('.all-words').append("""
-                        <tr style="background-color: #{if wp.word.isKnown(true) && wp.word.isKnown(false) then '#D9FFD5' else '#FFEFE1'};">
+                        <tr style="background-color: #{if wp.word.isKnown(true) && wp.word.isKnown(false) then '#D9FFD5' else '#FFEFE1'};" data-word="#{wp.word.getWord()}">
                             <td>#{wordIdx}</td>
-                            <td>#{wp.word.getWord()}</td>
+                            <td class="source-word">#{wp.word.getWord()}</td>
                             <td>#{wp.word.getTranslation()}</td>
                             <td>#{Math.floor(wp.weight*100)}</td>
                             <td>#{wp.word.getMemorizationAttempts(true).length} + #{wp.word.getMemorizationAttempts(false).length}</td>
@@ -67,13 +72,33 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
                 $('.all-new-words').append("""
                     <tr data-word="#{word.getWord()}">
                         <td>#{wordIdx}</td>
-                        <td>#{word.getWord()}</td>
+                        <td class="source-word">#{word.getWord()}</td>
                         <td><input type="text" class="form-control new-word-translation" placeholder="Translation"></td>
                     </tr>
                 """)
-            $('.new-word-translation').change () ->
-                bank.setTranslation($(this).parents('tr').data('word'), $(this).val())
+
+        $('.container').on 'click', '.source-word', () ->
+            srcWord = $(this).parents('tr').data('word')
+            cellTag = $(this)
+            cellTag.empty().append """<input type="text" class="form-control new-word-source" value="#{srcWord}">"""
+            cellTag.find('input').focus().select().change () ->
+                newSource = $(this).val()
+                if newSource == ''
+                    bank.removeWord(srcWord)
+                else
+                    bank.renameWord(srcWord, newSource)
                 updateCounters()
+            restore = () -> cellTag.empty().text "#{srcWord}"
+            cellTag.find('input').focusout () -> restore()
+            cellTag.find('input').keyup (e) ->
+                if e.keyCode == 27
+                    restore()
+
+        $('.container').on 'change', '.new-word-translation', () ->
+            bank.setTranslation($(this).parents('tr').data('word'), $(this).val())
+            updateCounters()
+
+        # ----------
 
         $('#save-new-word').on 'click', (e) ->
             e.preventDefault()
@@ -129,6 +154,11 @@ define ['jquery', 'cs!js/bank'], ($, bankMod) ->
             $('#vocabulary-section').show()
             $('#exercise-section').hide()
             updateCounters()
+
+        $('#close-vocabulary').on 'click', () ->
+            $('#vocabulary-section').hide()
+            $('#exercise-section').show()
+
 
 
         # -- Load words ----

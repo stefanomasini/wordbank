@@ -159,6 +159,7 @@ define ['js/bank'], (bankMod) ->
             probabilities = calculateProbabilitiesMap()
             expect(Math.abs(probabilities['1-fromSource'])).toBeLessThan(probabilities['1-fromTranslation'] - 0.001)
 
+
     describe 'saver', () ->
         change = (src, ts) ->
             src: src

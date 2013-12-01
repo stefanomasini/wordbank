@@ -36,6 +36,17 @@ define ['lodash'], (_) ->
             if @words[word]
                 new Word(@words[word], @listener)
 
+        removeWord: (word) ->
+            delete @words[word]
+            @listener?({src: word, delete: true})
+
+        renameWord: (oldWord, newWord) ->
+            w = @words[oldWord]
+            w.src = newWord
+            @words[newWord] = w
+            @listener?(@words[newWord])
+            @removeWord(oldWord)
+
 
     class Word
         constructor: (word, listener) ->
@@ -128,14 +139,16 @@ define ['lodash'], (_) ->
             @spool = {}
 
         notify: (change) ->
-            if !@spool[change.src] || change.epochUTCms > @spool[change.src].epochUTCms
+            if !@spool[change.src] || change.epochUTCms > @spool[change.src].epochUTCms || change.delete
                 @spool[change.src] = change
 
         startSaving: () ->
-            changes = _.values(@spool)
+            changes = (v for v in _.values(@spool) when !v.delete)
+            deletes = (v.src for v in _.values(@spool) when v.delete)
             @spool = {}
             return {
                 changes: changes
+                deletes: deletes
                 revert: () =>
                     for change in changes
                         @notify(change)
